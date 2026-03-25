@@ -33,14 +33,14 @@ export function MetricCard({
   return (
     <div
       className={cn(
-        'bg-white rounded-xl shadow-sm border border-gray-100 border-t-4 p-5 flex flex-col gap-3',
+        'bg-white rounded-xl shadow-sm border border-gray-100 border-t-4 p-4 sm:p-5 flex flex-col gap-2 sm:gap-3',
         accentColors[accent],
         className
       )}
     >
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
+          <div className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-[#6B7280] leading-tight">
             {title}
           </div>
         </div>

@@ -44,7 +44,7 @@ export default async function MandatesPage() {
   const onHold = mandates.filter((m) => m.status === 'on_hold')
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Mandates</h1>
@@ -55,7 +55,7 @@ export default async function MandatesPage() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4 sm:gap-4">
         <div className="bg-white rounded-xl border border-t-4 border-t-[#1B2A4A] border-gray-100 shadow-sm p-4">
           <div className="text-xs font-semibold uppercase tracking-wider text-[#6B7280]">Active</div>
           <div className="text-2xl font-bold text-gray-900 mt-2">{active.length}</div>

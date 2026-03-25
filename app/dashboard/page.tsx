@@ -110,7 +110,7 @@ export default async function DashboardPage() {
   ].map((s) => ({ ...s, count: s.count ?? 0 }))
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
@@ -120,7 +120,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4 sm:gap-4">
         <MetricCard
           title="Total Revenue"
           value={formatCurrency(pipeline?.total_revenue)}
@@ -157,8 +157,8 @@ export default async function DashboardPage() {
       {/* Revenue Chart + Activity Feed */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
         {/* Revenue Chart */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-[#6B7280]">
               Monthly Revenue (6 months)
             </h2>
@@ -177,7 +177,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Activity Feed */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-[#6B7280]">
               Recent Activity

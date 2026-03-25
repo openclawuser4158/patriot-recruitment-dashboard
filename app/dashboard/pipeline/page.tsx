@@ -51,7 +51,7 @@ export default async function PipelinePage() {
   }, {})
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Pipeline</h1>
         <p className="text-sm text-[#6B7280] mt-1">
@@ -60,7 +60,7 @@ export default async function PipelinePage() {
       </div>
 
       {/* Summary bar */}
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 sm:gap-3">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-5 sm:gap-3">
         {STAGES.map((stage) => (
           <div key={stage} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-center">
             <div className="text-2xl font-bold text-gray-900">{byStage[stage].length}</div>

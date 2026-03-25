@@ -83,7 +83,7 @@ export default async function RevenuePage() {
   const { invoices, total, collected, outstanding, pipeline, chartData } = await getRevenueData()
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Revenue</h1>
         <p className="text-sm text-[#6B7280] mt-1">Invoice tracker and revenue analytics</p>
@@ -115,8 +115,8 @@ export default async function RevenuePage() {
       </div>
 
       {/* Chart */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-[#6B7280]">
             Monthly Revenue (6 months)
           </h2>
@@ -133,11 +133,12 @@ export default async function RevenuePage() {
       </div>
 
       {/* Invoice list */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden overflow-x-auto">
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="px-4 sm:px-5 py-4 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-[#6B7280]">Invoices</h2>
           <span className="text-xs text-[#6B7280]">{invoices.length} total</span>
         </div>
+        <div className="overflow-x-auto">
         <table className="w-full min-w-[600px]">
           <thead>
             <tr className="border-b border-gray-100 bg-[#F5F7FA]">
@@ -190,6 +191,7 @@ export default async function RevenuePage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   )

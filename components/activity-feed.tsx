@@ -83,12 +83,12 @@ export function ActivityFeed({ interactions, maxItems = 20 }: ActivityFeedProps)
 
           {/* Content */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-baseline gap-2 flex-wrap">
-              <span className="text-sm font-semibold text-gray-900">{item.agent}</span>
-              <span className="text-sm text-gray-600 truncate">{item.subject || item.content || 'Interaction'}</span>
+            <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
+              <span className="text-sm font-semibold text-gray-900 flex-shrink-0">{item.agent}</span>
+              <span className="text-xs sm:text-sm text-gray-600 truncate max-w-[150px] sm:max-w-none">{item.subject || item.content || 'Interaction'}</span>
               <div className="flex items-center gap-1 text-[#6B7280]">
                 {entityIcon(item.entity_type)}
-                <span className="text-xs capitalize">{item.entity_type}</span>
+                <span className="text-[10px] sm:text-xs capitalize">{item.entity_type}</span>
               </div>
             </div>
             {item.content && item.subject && (

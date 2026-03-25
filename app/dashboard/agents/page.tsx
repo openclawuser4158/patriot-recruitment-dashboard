@@ -96,7 +96,7 @@ export default async function AgentsPage() {
   const pendingHandoffs = handoffs.filter((h) => h.status === 'pending').length
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Agents</h1>
         <p className="text-sm text-[#6B7280] mt-1">
@@ -105,7 +105,7 @@ export default async function AgentsPage() {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4 sm:gap-4">
         <MetricCard
           title="Active Agents"
           value={`${activeAgents} / ${AGENTS.length}`}
