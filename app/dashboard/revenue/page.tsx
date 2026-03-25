@@ -90,7 +90,7 @@ export default async function RevenuePage() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
         <MetricCard
           title="Total Billed"
           value={formatCurrency(total)}
@@ -133,12 +133,12 @@ export default async function RevenuePage() {
       </div>
 
       {/* Invoice list */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden overflow-x-auto">
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-[#6B7280]">Invoices</h2>
           <span className="text-xs text-[#6B7280]">{invoices.length} total</span>
         </div>
-        <table className="w-full">
+        <table className="w-full min-w-[600px]">
           <thead>
             <tr className="border-b border-gray-100 bg-[#F5F7FA]">
               <th className="text-left text-xs font-semibold uppercase tracking-wider text-[#6B7280] px-5 py-3">Client / Role</th>

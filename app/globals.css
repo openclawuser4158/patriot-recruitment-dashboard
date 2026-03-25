@@ -16,6 +16,13 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
   background-color: var(--light-grey);
   color: #111827;
+  /* Safe-area insets handled per-element in AppShell (not globally,
+     to avoid applying to the sidebar background) */
+}
+
+/* Ensure tap highlight is subtle on iOS */
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Custom scrollbar */

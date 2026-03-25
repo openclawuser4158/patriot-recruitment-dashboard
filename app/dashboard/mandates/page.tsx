@@ -1,7 +1,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { statusColor, formatCurrency, daysOpen } from '@/lib/utils'
 import { MapPin, Clock, Users, AlertCircle } from 'lucide-react'
-import { MandateRow } from './mandate-row'
+import { MandateRow, MandateCard } from './mandate-row'
 
 interface MandateRow {
   id: string
@@ -55,7 +55,7 @@ export default async function MandatesPage() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         <div className="bg-white rounded-xl border border-t-4 border-t-[#1B2A4A] border-gray-100 shadow-sm p-4">
           <div className="text-xs font-semibold uppercase tracking-wider text-[#6B7280]">Active</div>
           <div className="text-2xl font-bold text-gray-900 mt-2">{active.length}</div>
@@ -80,8 +80,21 @@ export default async function MandatesPage() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      {/* Mobile cards — visible on small screens */}
+      <div className="md:hidden space-y-3">
+        {mandates.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center text-[#6B7280] text-sm">
+            No active mandates
+          </div>
+        ) : (
+          mandates.map((mandate) => (
+            <MandateCard key={mandate.id} mandate={mandate} />
+          ))
+        )}
+      </div>
+
+      {/* Desktop table — hidden on small screens */}
+      <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-100 bg-[#F5F7FA]">

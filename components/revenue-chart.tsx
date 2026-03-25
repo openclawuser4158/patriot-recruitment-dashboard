@@ -50,16 +50,16 @@ export function RevenueChart({ data }: RevenueChartProps) {
         <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
         <XAxis
           dataKey="month"
-          tick={{ fontSize: 12, fill: '#6B7280' }}
+          tick={{ fontSize: 11, fill: '#6B7280' }}
           axisLine={false}
           tickLine={false}
         />
         <YAxis
-          tick={{ fontSize: 11, fill: '#6B7280' }}
+          tick={{ fontSize: 10, fill: '#6B7280' }}
           axisLine={false}
           tickLine={false}
           tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
-          width={48}
+          width={40}
         />
         <Tooltip content={<CustomTooltip />} />
         <Bar dataKey="invoiced" name="Invoiced" fill="#1B2A4A" radius={[3, 3, 0, 0]} maxBarSize={40} />

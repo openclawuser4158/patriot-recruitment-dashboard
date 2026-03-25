@@ -120,7 +120,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         <MetricCard
           title="Total Revenue"
           value={formatCurrency(pipeline?.total_revenue)}
@@ -155,9 +155,9 @@ export default async function DashboardPage() {
       <PipelineFunnel stages={funnelStages} />
 
       {/* Revenue Chart + Activity Feed */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
         {/* Revenue Chart */}
-        <div className="col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-[#6B7280]">
               Monthly Revenue (6 months)

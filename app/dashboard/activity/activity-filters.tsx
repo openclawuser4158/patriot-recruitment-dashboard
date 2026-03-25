@@ -28,9 +28,9 @@ export function ActivityFilters({ agents, entityTypes, currentAgent, currentEnti
   )
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
       <select
-        className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]/20"
+        className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]/20 min-h-[44px] sm:min-h-0 sm:py-1.5"
         value={currentAgent ?? ''}
         onChange={(e) => updateFilter('agent', e.target.value)}
       >
@@ -41,7 +41,7 @@ export function ActivityFilters({ agents, entityTypes, currentAgent, currentEnti
       </select>
 
       <select
-        className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]/20"
+        className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]/20 min-h-[44px] sm:min-h-0 sm:py-1.5"
         value={currentEntity ?? ''}
         onChange={(e) => updateFilter('entity', e.target.value)}
       >

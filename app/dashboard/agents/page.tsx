@@ -105,7 +105,7 @@ export default async function AgentsPage() {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         <MetricCard
           title="Active Agents"
           value={`${activeAgents} / ${AGENTS.length}`}
@@ -137,7 +137,7 @@ export default async function AgentsPage() {
       </div>
 
       {/* Agent cards */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {AGENTS.map((agent) => {
           const stats = agentActivity[agent.name] ?? { count: 0, lastActive: null }
           return (

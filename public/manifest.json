@@ -1,0 +1,14 @@
+{
+  "name": "Patriot Recruitment CRM",
+  "short_name": "Patriot CRM",
+  "description": "Construction recruitment intelligence dashboard",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#F5F7FA",
+  "theme_color": "#1B2A4A",
+  "orientation": "any",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

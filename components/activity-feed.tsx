@@ -73,7 +73,7 @@ export function ActivityFeed({ interactions, maxItems = 20 }: ActivityFeedProps)
   return (
     <div className="space-y-0 divide-y divide-gray-50">
       {items.map((item) => (
-        <div key={item.id} className="flex items-start gap-3 py-3 px-1 hover:bg-gray-50/70 rounded-lg transition-colors">
+        <div key={item.id} className="flex items-start gap-3 py-3.5 px-1 hover:bg-gray-50/70 active:bg-gray-50/70 rounded-lg transition-colors min-h-[44px]">
           {/* Agent avatar */}
           <div
             className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 ${agentColor(item.agent)}`}

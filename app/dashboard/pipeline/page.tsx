@@ -60,7 +60,7 @@ export default async function PipelinePage() {
       </div>
 
       {/* Summary bar */}
-      <div className="grid grid-cols-5 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 sm:gap-3">
         {STAGES.map((stage) => (
           <div key={stage} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-center">
             <div className="text-2xl font-bold text-gray-900">{byStage[stage].length}</div>
@@ -69,8 +69,9 @@ export default async function PipelinePage() {
         ))}
       </div>
 
-      {/* Kanban columns */}
-      <div className="grid grid-cols-5 gap-4 items-start">
+      {/* Kanban columns — horizontal scroll on mobile */}
+      <div className="-mx-6 px-6 overflow-x-auto sm:mx-0 sm:px-0 sm:overflow-visible">
+      <div className="grid grid-cols-5 gap-4 items-start min-w-[900px] sm:min-w-0">
         {STAGES.map((stage) => (
           <div key={stage} className="space-y-3">
             {/* Column header */}
@@ -120,6 +121,7 @@ export default async function PipelinePage() {
             )}
           </div>
         ))}
+      </div>
       </div>
     </div>
   )
