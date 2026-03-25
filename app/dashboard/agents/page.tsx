@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { MetricCard } from '@/components/metric-card'
 import { formatRelativeTime } from '@/lib/utils'

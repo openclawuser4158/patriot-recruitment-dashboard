@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { statusColor, formatCurrency, daysOpen } from '@/lib/utils'
 import { MapPin, Clock, Users, AlertCircle } from 'lucide-react'

@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { ActivityFeed } from '@/components/activity-feed'
 import { subDays } from 'date-fns'
