@@ -40,13 +40,17 @@ export async function POST(request: Request) {
       .limit(1)
 
     const lastSync = syncMeta?.[0]?.value
-    const beginTime = lastSync || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    // Mailgun accepts Unix timestamps for begin param
+    const beginUnix = lastSync
+      ? Math.floor(new Date(lastSync).getTime() / 1000)
+      : Math.floor((Date.now() - 7 * 24 * 60 * 60 * 1000) / 1000)
 
     // Fetch from Mailgun
     const auth = Buffer.from(`api:${MAILGUN_API_KEY}`).toString('base64')
     const params = new URLSearchParams({
       limit: '300',
-      begin: beginTime,
+      begin: String(beginUnix),
+      ascending: 'yes',
     })
 
     let totalStored = 0
