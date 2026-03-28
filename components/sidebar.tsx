@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Menu,
   X,
+  Mail,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -23,7 +24,9 @@ const navItems = [
   { href: '/dashboard/mandates', label: 'Mandates', icon: Briefcase },
   { href: '/dashboard/activity', label: 'Activity', icon: Activity },
   { href: '/dashboard/revenue', label: 'Revenue', icon: DollarSign },
+  { href: '/dashboard/email-analytics', label: 'Email Analytics', icon: Mail },
   { href: '/dashboard/agents', label: 'Agents', icon: Users },
+  { href: '/jobs', label: 'Job Board', icon: Briefcase },
 ]
 
 function NavContent({ pathname, onNavClick }: { pathname: string; onNavClick?: () => void }) {
