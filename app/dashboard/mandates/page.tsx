@@ -1,9 +1,11 @@
-import { createServerSupabaseClient } from '@/lib/supabase'
-import { statusColor, formatCurrency, daysOpen } from '@/lib/utils'
-import { MapPin, Clock, Users, AlertCircle } from 'lucide-react'
-import { MandateRow, MandateCard } from './mandate-row'
+'use client'
 
-interface MandateRow {
+import { useState, useEffect } from 'react'
+import { createBrowserSupabaseClient } from '@/lib/supabase'
+import { statusColor, formatCurrency, daysOpen } from '@/lib/utils'
+import { MandateRow as MandateRowComponent, MandateCard } from './mandate-row'
+
+interface MandateData {
   id: string
   role_title: string
   location_city: string | null
@@ -20,25 +22,41 @@ interface MandateRow {
   submissions: { id: string; status: string }[]
 }
 
-async function getMandates(): Promise<MandateRow[]> {
-  const supabase = createServerSupabaseClient()
+export default function MandatesPage() {
+  const [mandates, setMandates] = useState<MandateData[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const { data } = await supabase
-    .from('mandates')
-    .select(`
-      id, role_title, location_city, location_state, status, urgency, salary_min, salary_max,
-      created_at, updated_at, responsibilities, fee_percentage,
-      client:clients(id, company_name, status),
-      submissions(id, status)
-    `)
-    .in('status', ['active', 'on_hold'])
-    .order('created_at', { ascending: false })
+  useEffect(() => {
+    async function fetchData() {
+      const supabase = createBrowserSupabaseClient()
 
-  return (data ?? []) as unknown as MandateRow[]
-}
+      const { data } = await supabase
+        .from('mandates')
+        .select(`
+          id, role_title, location_city, location_state, status, urgency, salary_min, salary_max,
+          created_at, updated_at, responsibilities, fee_percentage,
+          client:clients(id, company_name, status),
+          submissions(id, status)
+        `)
+        .in('status', ['active', 'on_hold'])
+        .order('created_at', { ascending: false })
 
-export default async function MandatesPage() {
-  const mandates = await getMandates()
+      setMandates((data ?? []) as unknown as MandateData[])
+      setLoading(false)
+    }
+    fetchData()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-[#1B2A4A] border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-[#6B7280]">Loading mandates…</p>
+        </div>
+      </div>
+    )
+  }
 
   const active = mandates.filter((m) => m.status === 'active')
   const onHold = mandates.filter((m) => m.status === 'on_hold')
@@ -80,7 +98,7 @@ export default async function MandatesPage() {
         </div>
       </div>
 
-      {/* Mobile cards — visible on small screens */}
+      {/* Mobile cards */}
       <div className="md:hidden space-y-3">
         {mandates.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center text-[#6B7280] text-sm">
@@ -93,7 +111,7 @@ export default async function MandatesPage() {
         )}
       </div>
 
-      {/* Desktop table — hidden on small screens */}
+      {/* Desktop table */}
       <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full">
           <thead>
@@ -130,7 +148,7 @@ export default async function MandatesPage() {
               </tr>
             ) : (
               mandates.map((mandate) => (
-                <MandateRow key={mandate.id} mandate={mandate} />
+                <MandateRowComponent key={mandate.id} mandate={mandate} />
               ))
             )}
           </tbody>

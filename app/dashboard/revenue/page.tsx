@@ -1,10 +1,12 @@
-import { createServerSupabaseClient } from '@/lib/supabase'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { MetricCard } from '@/components/metric-card'
 import { RevenueChart } from '@/components/revenue-chart'
-import { statusColor, formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency, formatDate, statusColor, cn } from '@/lib/utils'
 import { DollarSign, TrendingUp, Clock } from 'lucide-react'
-import { format, subMonths, startOfMonth } from 'date-fns'
-import { cn } from '@/lib/utils'
+import { format, subMonths } from 'date-fns'
 
 interface Invoice {
   id: string
@@ -16,71 +18,73 @@ interface Invoice {
   placement: any
 }
 
-interface MonthlyInvoice {
-  amount: number
-  status: string
-  sent_date: string | null
-  paid_date: string | null
-}
+export default function RevenuePage() {
+  const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [chartData, setChartData] = useState<{ month: string; invoiced: number; revenue: number }[]>([])
+  const [loading, setLoading] = useState(true)
 
-async function getRevenueData() {
-  const supabase = createServerSupabaseClient()
+  useEffect(() => {
+    async function fetchData() {
+      const supabase = createBrowserSupabaseClient()
 
-  const [invoicesRes, pipelineRes, monthlyRes] = await Promise.all([
-    supabase
-      .from('invoices')
-      .select(`
-        id, amount, status, sent_date, due_date, paid_date,
-        placement:placements(
-          id,
-          candidate:candidates(first_name, last_name),
-          mandate:mandates(role_title, client:clients(company_name))
-        )
-      `)
-      .order('sent_date', { ascending: false })
-      .limit(50),
-    supabase.from('pipeline_dashboard').select('*').single(),
-    supabase
-      .from('invoices')
-      .select('amount, status, sent_date, paid_date')
-      .gte('sent_date', subMonths(new Date(), 6).toISOString()),
-  ])
+      const [invoicesRes, monthlyRes] = await Promise.all([
+        supabase
+          .from('invoices')
+          .select(`
+            id, amount, status, sent_date, due_date, paid_date,
+            placement:placements(
+              id,
+              candidate:candidates(first_name, last_name),
+              mandate:mandates(role_title, client:clients(company_name))
+            )
+          `)
+          .order('sent_date', { ascending: false })
+          .limit(50),
+        supabase
+          .from('invoices')
+          .select('amount, status, sent_date, paid_date')
+          .gte('sent_date', subMonths(new Date(), 6).toISOString()),
+      ])
 
-  // Build monthly chart data
-  const monthlyData: Record<string, { invoiced: number; revenue: number }> = {}
-  for (let i = 5; i >= 0; i--) {
-    const d = subMonths(new Date(), i)
-    const key = format(d, 'MMM yy')
-    monthlyData[key] = { invoiced: 0, revenue: 0 }
-  }
-  for (const inv of (monthlyRes.data ?? []) as MonthlyInvoice[]) {
-    if (!inv.sent_date) continue
-    const key = format(new Date(inv.sent_date), 'MMM yy')
-    if (monthlyData[key]) {
-      monthlyData[key].invoiced += inv.amount
-      if (inv.status === 'paid') monthlyData[key].revenue += inv.amount
+      // Build monthly chart data
+      const monthlyData: Record<string, { invoiced: number; revenue: number }> = {}
+      for (let i = 5; i >= 0; i--) {
+        const d = subMonths(new Date(), i)
+        const key = format(d, 'MMM yy')
+        monthlyData[key] = { invoiced: 0, revenue: 0 }
+      }
+      for (const inv of (monthlyRes.data ?? []) as { amount: number; status: string; sent_date: string | null }[]) {
+        if (!inv.sent_date) continue
+        const key = format(new Date(inv.sent_date), 'MMM yy')
+        if (monthlyData[key]) {
+          monthlyData[key].invoiced += inv.amount
+          if (inv.status === 'paid') monthlyData[key].revenue += inv.amount
+        }
+      }
+
+      setInvoices((invoicesRes.data ?? []) as unknown as Invoice[])
+      setChartData(Object.entries(monthlyData).map(([month, vals]) => ({ month, ...vals })))
+      setLoading(false)
     }
+    fetchData()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-[#1B2A4A] border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-[#6B7280]">Loading revenue…</p>
+        </div>
+      </div>
+    )
   }
 
-  const invoices = (invoicesRes.data ?? []) as unknown as Invoice[]
   const total = invoices.reduce((s, i) => s + i.amount, 0)
   const collected = invoices.filter((i) => i.status === 'paid').reduce((s, i) => s + i.amount, 0)
   const outstanding = invoices
     .filter((i) => !['paid', 'written_off'].includes(i.status))
     .reduce((s, i) => s + i.amount, 0)
-
-  return {
-    invoices,
-    total,
-    collected,
-    outstanding,
-    pipeline: pipelineRes.data,
-    chartData: Object.entries(monthlyData).map(([month, vals]) => ({ month, ...vals })),
-  }
-}
-
-export default async function RevenuePage() {
-  const { invoices, total, collected, outstanding, pipeline, chartData } = await getRevenueData()
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">

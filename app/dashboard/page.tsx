@@ -1,11 +1,14 @@
-import { createServerSupabaseClient } from '@/lib/supabase'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { MetricCard } from '@/components/metric-card'
 import { PipelineFunnel } from '@/components/pipeline-funnel'
 import { ActivityFeed } from '@/components/activity-feed'
 import { RevenueChart } from '@/components/revenue-chart'
 import { formatCurrency } from '@/lib/utils'
 import { DollarSign, Briefcase, Users, TrendingUp } from 'lucide-react'
-import { format, subDays, startOfMonth, subMonths } from 'date-fns'
+import { format, subMonths, startOfMonth } from 'date-fns'
 
 interface PipelineData {
   leads: number | null
@@ -34,67 +37,92 @@ interface ActivityRow {
   created_at: string
 }
 
-async function getDashboardData() {
-  const supabase = createServerSupabaseClient()
-
-  const [pipelineRes, recentActivityRes, mandatesCountRes, placementsMonthRes, monthlyRevenueRes] =
-    await Promise.all([
-      supabase.from('pipeline_dashboard').select('*').single(),
-      supabase
-        .from('interactions')
-        .select('*')
-        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-        .order('created_at', { ascending: false })
-        .limit(20),
-      supabase
-        .from('mandates')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'active'),
-      supabase
-        .from('placements')
-        .select('id', { count: 'exact', head: true })
-        .gte('created_at', startOfMonth(new Date()).toISOString()),
-      // Monthly revenue for last 6 months
-      supabase
-        .from('invoices')
-        .select('amount, status, sent_date, paid_date')
-        .gte('sent_date', subMonths(new Date(), 6).toISOString()),
-    ])
-
-  // Build monthly revenue buckets
-  const monthlyData: Record<string, { invoiced: number; revenue: number }> = {}
-  for (let i = 5; i >= 0; i--) {
-    const d = subMonths(new Date(), i)
-    const key = format(d, 'MMM yy')
-    monthlyData[key] = { invoiced: 0, revenue: 0 }
-  }
-
-  for (const inv of (monthlyRevenueRes.data ?? []) as { amount: number; status: string; sent_date: string | null; paid_date: string | null }[]) {
-    if (!inv.sent_date) continue
-    const key = format(new Date(inv.sent_date), 'MMM yy')
-    if (monthlyData[key]) {
-      monthlyData[key].invoiced += inv.amount
-      if (inv.status === 'paid') monthlyData[key].revenue += inv.amount
-    }
-  }
-
-  const chartData = Object.entries(monthlyData).map(([month, vals]) => ({
-    month,
-    ...vals,
-  }))
-
-  return {
-    pipeline: pipelineRes.data as PipelineData | null,
-    recentActivity: (recentActivityRes.data ?? []) as ActivityRow[],
-    activeMandates: mandatesCountRes.count ?? 0,
-    placementsThisMonth: placementsMonthRes.count ?? 0,
-    chartData,
-  }
+interface DashboardData {
+  pipeline: PipelineData | null
+  recentActivity: ActivityRow[]
+  activeMandates: number
+  placementsThisMonth: number
+  chartData: { month: string; invoiced: number; revenue: number }[]
 }
 
-export default async function DashboardPage() {
-  const { pipeline, recentActivity, activeMandates, placementsThisMonth, chartData } =
-    await getDashboardData()
+export default function DashboardPage() {
+  const [data, setData] = useState<DashboardData | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchData() {
+      const supabase = createBrowserSupabaseClient()
+
+      const [pipelineRes, recentActivityRes, mandatesCountRes, placementsMonthRes, monthlyRevenueRes] =
+        await Promise.all([
+          supabase.from('pipeline_dashboard').select('*').single(),
+          supabase
+            .from('interactions')
+            .select('*')
+            .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+            .order('created_at', { ascending: false })
+            .limit(20),
+          supabase
+            .from('mandates')
+            .select('id', { count: 'exact', head: true })
+            .eq('status', 'active'),
+          supabase
+            .from('placements')
+            .select('id', { count: 'exact', head: true })
+            .gte('created_at', startOfMonth(new Date()).toISOString()),
+          supabase
+            .from('invoices')
+            .select('amount, status, sent_date, paid_date')
+            .gte('sent_date', subMonths(new Date(), 6).toISOString()),
+        ])
+
+      // Build monthly revenue buckets
+      const monthlyData: Record<string, { invoiced: number; revenue: number }> = {}
+      for (let i = 5; i >= 0; i--) {
+        const d = subMonths(new Date(), i)
+        const key = format(d, 'MMM yy')
+        monthlyData[key] = { invoiced: 0, revenue: 0 }
+      }
+
+      for (const inv of (monthlyRevenueRes.data ?? []) as { amount: number; status: string; sent_date: string | null; paid_date: string | null }[]) {
+        if (!inv.sent_date) continue
+        const key = format(new Date(inv.sent_date), 'MMM yy')
+        if (monthlyData[key]) {
+          monthlyData[key].invoiced += inv.amount
+          if (inv.status === 'paid') monthlyData[key].revenue += inv.amount
+        }
+      }
+
+      const chartData = Object.entries(monthlyData).map(([month, vals]) => ({
+        month,
+        ...vals,
+      }))
+
+      setData({
+        pipeline: pipelineRes.data as PipelineData | null,
+        recentActivity: (recentActivityRes.data ?? []) as ActivityRow[],
+        activeMandates: mandatesCountRes.count ?? 0,
+        placementsThisMonth: placementsMonthRes.count ?? 0,
+        chartData,
+      })
+      setLoading(false)
+    }
+
+    fetchData()
+  }, [])
+
+  if (loading || !data) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-[#1B2A4A] border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-[#6B7280]">Loading dashboard…</p>
+        </div>
+      </div>
+    )
+  }
+
+  const { pipeline, recentActivity, activeMandates, placementsThisMonth, chartData } = data
 
   const funnelStages = [
     { key: 'leads', label: 'Leads', count: pipeline?.leads ?? 0 },

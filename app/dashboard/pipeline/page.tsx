@@ -1,5 +1,7 @@
-import { createServerSupabaseClient } from '@/lib/supabase'
-import { statusColor, formatCurrency, daysOpen } from '@/lib/utils'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { format } from 'date-fns'
 
 interface Submission {
@@ -7,30 +9,8 @@ interface Submission {
   status: string
   submitted_at: string
   notes: string | null
-  mandate: { id: string; title: string; location: string; client: { company_name: string } | null } | null
+  mandate: { id: string; role_title: string; location_city: string; location_state: string; client: { company_name: string } | null } | null
   candidate: { id: string; first_name: string; last_name: string; current_title: string | null } | null
-}
-
-async function getPipelineData() {
-  const supabase = createServerSupabaseClient()
-
-  const [submissionsRes, pipelineRes] = await Promise.all([
-    supabase
-      .from('submissions')
-      .select(`
-        id, status, submitted_at, candidate_summary,
-        mandate:mandates(id, role_title, location_city, location_state, client:clients(company_name)),
-        candidate:candidates(id, first_name, last_name, current_title)
-      `)
-      .not('status', 'in', '(rejected,withdrawn)')
-      .order('submitted_at', { ascending: false }),
-    supabase.from('pipeline_dashboard').select('*').single(),
-  ])
-
-  return {
-    submissions: (submissionsRes.data ?? []) as unknown as Submission[],
-    pipeline: pipelineRes.data,
-  }
 }
 
 const STAGES = ['submitted', 'reviewing', 'interviewing', 'offered', 'placed']
@@ -42,10 +22,42 @@ const STAGE_LABELS: Record<string, string> = {
   placed: 'Placed',
 }
 
-export default async function PipelinePage() {
-  const { submissions, pipeline } = await getPipelineData()
+export default function PipelinePage() {
+  const [submissions, setSubmissions] = useState<Submission[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const byStage = STAGES.reduce<Record<string, typeof submissions>>((acc, s) => {
+  useEffect(() => {
+    async function fetchData() {
+      const supabase = createBrowserSupabaseClient()
+
+      const { data } = await supabase
+        .from('submissions')
+        .select(`
+          id, status, submitted_at, candidate_summary,
+          mandate:mandates(id, role_title, location_city, location_state, client:clients(company_name)),
+          candidate:candidates(id, first_name, last_name, current_title)
+        `)
+        .not('status', 'in', '(rejected,withdrawn)')
+        .order('submitted_at', { ascending: false })
+
+      setSubmissions((data ?? []) as unknown as Submission[])
+      setLoading(false)
+    }
+    fetchData()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-[#1B2A4A] border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-[#6B7280]">Loading pipeline…</p>
+        </div>
+      </div>
+    )
+  }
+
+  const byStage = STAGES.reduce<Record<string, Submission[]>>((acc, s) => {
     acc[s] = submissions.filter((sub) => sub.status === s)
     return acc
   }, {})
@@ -69,12 +81,11 @@ export default async function PipelinePage() {
         ))}
       </div>
 
-      {/* Kanban columns — horizontal scroll on mobile */}
+      {/* Kanban columns */}
       <div className="-mx-6 px-6 overflow-x-auto sm:mx-0 sm:px-0 sm:overflow-visible">
       <div className="grid grid-cols-5 gap-4 items-start min-w-[900px] sm:min-w-0">
         {STAGES.map((stage) => (
           <div key={stage} className="space-y-3">
-            {/* Column header */}
             <div className="flex items-center justify-between px-1">
               <span className="text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
                 {STAGE_LABELS[stage]}
@@ -84,7 +95,6 @@ export default async function PipelinePage() {
               </span>
             </div>
 
-            {/* Cards */}
             {byStage[stage].length === 0 ? (
               <div className="bg-white rounded-xl border border-dashed border-gray-200 p-4 text-center text-xs text-gray-400">
                 No candidates

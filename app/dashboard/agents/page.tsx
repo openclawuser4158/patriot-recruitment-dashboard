@@ -1,4 +1,7 @@
-import { createServerSupabaseClient } from '@/lib/supabase'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { MetricCard } from '@/components/metric-card'
 import { formatRelativeTime } from '@/lib/utils'
 import { Users, Briefcase, FileText, TrendingUp } from 'lucide-react'
@@ -48,49 +51,65 @@ const AGENTS = [
   },
 ]
 
-async function getAgentStats() {
-  const supabase = createServerSupabaseClient()
-
-  const { data: interactions } = await supabase
-    .from('interactions')
-    .select('agent, created_at')
-    .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-    .order('created_at', { ascending: false })
-
-  const rows = (interactions ?? []) as { agent: string; created_at: string }[]
-
-  // Count interactions per agent (last 7d)
-  const agentActivity: Record<string, { count: number; lastActive: string | null }> = {}
-  for (const agent of AGENTS) {
-    const matching = rows.filter((i) =>
-      i.agent.toLowerCase().includes(agent.name.split(' ')[0].toLowerCase())
-    )
-    agentActivity[agent.name] = {
-      count: matching.length,
-      lastActive: matching.length > 0 ? matching[0].created_at : null,
-    }
-  }
-
-  // Pipeline stats per agent (via handoffs)
-  const { data: handoffs } = await supabase
-    .from('handoffs')
-    .select('from_agent, to_agent, status, created_at')
-    .order('created_at', { ascending: false })
-    .limit(100)
-
-  const handoffRows = (handoffs ?? []) as {
-    from_agent: string
-    to_agent: string
-    status: string
-    created_at: string
-  }[]
-
-  return { agentActivity, handoffs: handoffRows }
+interface AgentStats {
+  agentActivity: Record<string, { count: number; lastActive: string | null }>
+  handoffs: { from_agent: string; to_agent: string; status: string; created_at: string }[]
 }
 
-export default async function AgentsPage() {
-  const { agentActivity, handoffs } = await getAgentStats()
+export default function AgentsPage() {
+  const [stats, setStats] = useState<AgentStats | null>(null)
+  const [loading, setLoading] = useState(true)
 
+  useEffect(() => {
+    async function fetchData() {
+      const supabase = createBrowserSupabaseClient()
+
+      const { data: interactions } = await supabase
+        .from('interactions')
+        .select('agent, created_at')
+        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+        .order('created_at', { ascending: false })
+
+      const rows = (interactions ?? []) as { agent: string; created_at: string }[]
+
+      const agentActivity: Record<string, { count: number; lastActive: string | null }> = {}
+      for (const agent of AGENTS) {
+        const matching = rows.filter((i) =>
+          i.agent.toLowerCase().includes(agent.name.split(' ')[0].toLowerCase())
+        )
+        agentActivity[agent.name] = {
+          count: matching.length,
+          lastActive: matching.length > 0 ? matching[0].created_at : null,
+        }
+      }
+
+      const { data: handoffs } = await supabase
+        .from('handoffs')
+        .select('from_agent, to_agent, status, created_at')
+        .order('created_at', { ascending: false })
+        .limit(100)
+
+      setStats({
+        agentActivity,
+        handoffs: (handoffs ?? []) as { from_agent: string; to_agent: string; status: string; created_at: string }[],
+      })
+      setLoading(false)
+    }
+    fetchData()
+  }, [])
+
+  if (loading || !stats) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-[#1B2A4A] border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-[#6B7280]">Loading agents…</p>
+        </div>
+      </div>
+    )
+  }
+
+  const { agentActivity, handoffs } = stats
   const totalInteractions = Object.values(agentActivity).reduce((s, a) => s + a.count, 0)
   const activeAgents = Object.values(agentActivity).filter((a) => a.count > 0).length
   const pendingHandoffs = handoffs.filter((h) => h.status === 'pending').length
@@ -139,20 +158,18 @@ export default async function AgentsPage() {
       {/* Agent cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {AGENTS.map((agent) => {
-          const stats = agentActivity[agent.name] ?? { count: 0, lastActive: null }
+          const activity = agentActivity[agent.name] ?? { count: 0, lastActive: null }
           return (
             <div
               key={agent.name}
               className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex gap-4"
             >
-              {/* Avatar */}
               <div
                 className={`w-12 h-12 rounded-xl ${agent.color} flex items-center justify-center text-white text-xl flex-shrink-0`}
               >
                 {agent.emoji}
               </div>
 
-              {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <div>
@@ -160,7 +177,7 @@ export default async function AgentsPage() {
                     <div className="text-xs font-medium text-[#6B7280]">{agent.role}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-lg font-bold text-gray-900">{stats.count}</div>
+                    <div className="text-lg font-bold text-gray-900">{activity.count}</div>
                     <div className="text-[10px] text-[#6B7280]">interactions</div>
                   </div>
                 </div>
@@ -173,16 +190,16 @@ export default async function AgentsPage() {
                   <div className="flex items-center gap-1.5">
                     <div
                       className={`w-2 h-2 rounded-full ${
-                        stats.count > 0 ? 'bg-emerald-400' : 'bg-gray-300'
+                        activity.count > 0 ? 'bg-emerald-400' : 'bg-gray-300'
                       }`}
                     />
                     <span className="text-xs text-[#6B7280]">
-                      {stats.count > 0 ? 'Active this week' : 'No activity'}
+                      {activity.count > 0 ? 'Active this week' : 'No activity'}
                     </span>
                   </div>
-                  {stats.lastActive && (
+                  {activity.lastActive && (
                     <span className="text-xs text-[#6B7280]">
-                      Last: {formatRelativeTime(stats.lastActive)}
+                      Last: {formatRelativeTime(activity.lastActive)}
                     </span>
                   )}
                 </div>
